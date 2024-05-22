@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{487CC6F9-7752-4B26-8EDC-F0DB488546D1}|1. Simple text editor\\1. Simple text editor.vcxproj|C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{487CC6F9-7752-4B26-8EDC-F0DB488546D1}|1. Simple text editor\\1. Simple text editor.vcxproj|solutionrelative:1. Simple text editor\\test.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{487CC6F9-7752-4B26-8EDC-F0DB488546D1}|1. Simple text editor\\1. Simple text editor.vcxproj|C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\Program.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{487CC6F9-7752-4B26-8EDC-F0DB488546D1}|1. Simple text editor\\1. Simple text editor.vcxproj|solutionrelative:1. Simple text editor\\Program.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,14 +23,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "test.cpp",
-              "DocumentMoniker": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\test.cpp",
-              "RelativeDocumentMoniker": "1. Simple text editor\\test.cpp",
-              "ToolTip": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\test.cpp",
-              "RelativeToolTip": "1. Simple text editor\\test.cpp",
-              "ViewState": "AQIAABIAAAAAAAAAAAAAACcAAAAXAAAA",
+              "Title": "Program.cpp",
+              "DocumentMoniker": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\Program.cpp",
+              "RelativeDocumentMoniker": "1. Simple text editor\\Program.cpp",
+              "ToolTip": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\Program.cpp",
+              "RelativeToolTip": "1. Simple text editor\\Program.cpp",
+              "ViewState": "AQIAADAAAAAAAAAAAAAtwB0AAAAXAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-05-12T11:39:27.927Z",
+              "WhenOpened": "2024-05-22T15:26:32.739Z",
               "EditorCaption": ""
             }
           ]
