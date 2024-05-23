@@ -6,29 +6,43 @@ const int COMMAND_LENGTH = 32;
 const int LINE_LENGTH = 256;    
 
 char **text;                // Array of pointers to hold lines of text
-int text_lines_count = 0;   // Current number of lines in the text editor
-int text_capacity = 16;     // Number of 'inputs'
+int text_lines_count = 0;   // Current number of 'inputs' in the text editor
+int text_capacity = 16;     // Number of possible 'inputs'
 
 
 void print_help() {
     printf("The list of commands:\n");
-    printf("help     - Show this help information\n");
-    printf("exit     - Exit the text editor\n");
-    printf("add_line - Add a new line to the text editor\n");
+    printf("help           - Show this help information\n");
+    printf("exit           - Exit the text editor\n");
+    printf("add_line       - Add a new line to the text editor\n");
+    printf("print_text     - Display all text in console\n");
+    printf("save_to_file   - Save the text to a file\n");
+    printf("load_from_file - Load the text from a file\n");
 }
 
 void add_line(char* line) {
     if (text_lines_count >= text_capacity) {
-        printf("Error! Maximum number of lines is reached");
-        //resize the array later
-        return;
+        // resizing the array
+        text_capacity *= 2;
+        char** new_text = (char**)realloc(text, text_capacity * sizeof(char*));
+        if (new_text == NULL) {
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
+        text = new_text;
+        free(new_text);
     }
-    for (int i = 0; i < strlen(line); i++) {
+    /*for (int i = 0; i < strlen(line); i++) {
 		printf("%c\n", line[i]);
 	}
+    printf("%p", text);*/
+
     // new memory for the new line
-    printf("%p", text);
     text[text_lines_count] = (char*)malloc((strlen(line) + 1) * sizeof(char));
+    if (text[text_lines_count] == NULL) {
+		printf("Memory allocation failed\n");
+		exit(1);
+	}
 
     strcpy_s(text[text_lines_count], strlen(line) + 1, line);
     printf("Line added successfully!\n");
@@ -38,14 +52,49 @@ void add_line(char* line) {
 
 void print_lines() {
     if (text_lines_count == 0) {
+        printf("*emptiness*\n");
         return;
     }
     for (int i = 0; i < text_lines_count; i++) {
-        for (int j = 0; j < strlen(text[i]); j++) {
-            printf("%d: %c", i + 1, text[i][j]);
-            printf("\n");
-        }
+        printf("%s", text[i]);
     }
+}
+
+void save_to_file(char* filename) {
+    errno_t err;
+    FILE* file;
+    err = fopen_s(&file, filename, "w");
+    if (err == 0) {
+        printf("The file was opened\n");
+	}
+	else {
+		printf("The file was not opened\n");
+		return;
+    }
+    for (int i = 0; i < text_lines_count; i++) {
+        fprintf(file, "%s", text[i]);
+    }
+    fclose(file);
+    printf("Text saved to the file successfully!\n");
+}
+
+void load_from_file(char* filename) {
+    FILE* file;
+    errno_t err;
+    err = fopen_s(&file, filename, "r");
+    if (err == 0) {
+        printf("The file was opened\n");
+    }
+    else {
+        printf("The file was not opened\n");
+        return;
+    }
+    char line[LINE_LENGTH];
+    while (fgets(line, LINE_LENGTH, file) != NULL) {
+        printf("%s", line);
+    }
+    fclose(file);
+    printf("Text loaded from the file successfully!\n");
 }
 
 void parse_command(char *command) {
@@ -55,6 +104,10 @@ void parse_command(char *command) {
     }
     else if (strcmp(command, "exit") == 0) {
         printf("Exiting the text editor...\n");
+        for (int i = 0; i < text_lines_count; i++) {
+            free(text[i]);
+        }
+        free(text);
         exit(0);
     }
     else if (strcmp(command, "add_line") == 0) {
@@ -65,7 +118,27 @@ void parse_command(char *command) {
 			add_line(line);
 		}
 	}
-	
+    else if (strcmp(command, "print_text") == 0) {
+        print_lines();
+    }
+    else if (strcmp(command, "save_to_file") == 0) {
+    char filename[LINE_LENGTH];
+		printf("Enter the filename: ");
+		if (fgets(filename, LINE_LENGTH, stdin) != NULL) {
+			filename[strcspn(filename, "\n")] = 0;
+            strcat_s(filename, ".txt");
+			save_to_file(filename);
+		}
+	}
+    else if (strcmp(command, "load_from_file") == 0) {
+        char filename[LINE_LENGTH];
+        printf("Enter the filename: ");
+        if (fgets(filename, LINE_LENGTH, stdin) != NULL) {
+            filename[strcspn(filename, "\n")] = 0;
+            strcat_s(filename, ".txt");
+            load_from_file(filename);
+        }
+    }
     else {
         printf("The command is not implemented\n");
     }
@@ -75,6 +148,11 @@ void parse_command(char *command) {
 int main() {
     char command[COMMAND_LENGTH];
     text = (char**)malloc(text_capacity * sizeof(char*));
+    if (text == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
+
     printf("Welcome to the console-based text editor!\n");
     printf("Type \"help\" to see all commands.\n");
 
@@ -85,7 +163,6 @@ int main() {
             // Remove the newline character at the end
             command[strcspn(command, "\n")] = 0;
 
-            print_lines();
             parse_command(command);
         }
     }
