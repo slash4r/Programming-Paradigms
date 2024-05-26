@@ -170,6 +170,9 @@ void find_substring(char* substring) {
 
 
 void parse_command(char* command) {
+    system("cls");
+    
+
     // string comparison   true == 0
     if (strcmp(command, "help") == 0) {
         print_help();
@@ -231,6 +234,8 @@ void parse_command(char* command) {
         printf("tetstststs");
         printf("The command is not implemented\n");
     }
+
+    printf("\nType \"help\" to see all commands.\n");
 }
 
 
