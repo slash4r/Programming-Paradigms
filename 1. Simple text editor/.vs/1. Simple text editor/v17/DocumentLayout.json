@@ -14,8 +14,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -24,14 +28,10 @@
               "RelativeDocumentMoniker": "1. Simple text editor\\Program.cpp",
               "ToolTip": "C:\\_GitHub\\Programming-Paradigms\\1. Simple text editor\\1. Simple text editor\\Program.cpp",
               "RelativeToolTip": "1. Simple text editor\\Program.cpp",
-              "ViewState": "AQIAACQAAAAAAAAAAAAAADMAAAAUAAAA",
+              "ViewState": "AQIAAOsAAAAAAAAAAAAhwP0AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-22T15:26:32.739Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }

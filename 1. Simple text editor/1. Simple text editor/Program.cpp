@@ -76,7 +76,6 @@ void save_to_file(char* filename) {
     err = fopen_s(&file, filename, "w");
     if (err == 0) {
         printf("The file was opened.\n");
-        printf("WARNING! If the file has some data in it, it will be OVERWRITTEN!\n");
 	}
 	else {
 		printf("The file was not opened\n");
@@ -112,8 +111,14 @@ void load_from_file(char* filename) {
 			for (int i = 0; i < text_inputs_count; i++) {
 				free(text[i]);
 			}
-			text_inputs_count = 0;
-			break;
+            text[0] = (char*)malloc(1 * sizeof(char));
+            if (text[0] == NULL) {
+                printf("Memory allocation failed\n");
+                exit(1);
+            }
+            text[0][0] = '\0';
+            text_inputs_count = 1;
+            break;
 		}
         else {
             printf("Please enter y or n\n");
@@ -134,17 +139,35 @@ void load_from_file(char* filename) {
     }
     fclose(file);
 
-    printf("\n");
-    printf("Text loaded from the file successfully!\n");
+    printf("\nText loaded from the file successfully!");
 }
 
 void find_substring(char* substring) {
-	for (int i = 0; i < text_inputs_count; i++) {
-		if (strstr(text[i], substring) != NULL) {
-			printf("The substring is found in the line %d\n", i + 1);
-		}
-	}
+    const int substring_length = strlen(substring);
+    int line_count = 0;
+
+    for (int i = 0; i < text_inputs_count; i++) {
+        char* string = text[i];
+        int count = 0;
+
+        if (string[0] == '\t') {
+            string += 1;
+        }
+        char* pos = string;
+
+        while ((pos = strstr(pos, substring)) != NULL) {
+            printf("The substring \"%s\" is found at position %d in line %ld\n", substring, pos - string, line_count);
+            pos += substring_length; // Move past the current match
+            count++;
+        }
+
+        if (string[0] == '\n') {
+            line_count += 1;
+        }
+    }
 }
+
+
 
 void parse_command(char* command) {
     // string comparison   true == 0
@@ -172,6 +195,7 @@ void parse_command(char* command) {
     }
     else if (strcmp(command, "save") == 0) {
         char filename[LINE_LENGTH];
+        printf("WARNING! If the file has some data in it, it will be OVERWRITTEN!\n");
         printf("Enter the filename: ");
         if (fgets(filename, LINE_LENGTH, stdin) != NULL) {
             filename[strcspn(filename, "\n")] = 0;
