@@ -1,16 +1,8 @@
-# Prerequisites
-*.d
-
 # Object files
 *.o
-*.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
+*.lo
+*.slo
 
 # Precompiled Headers
 *.gch
@@ -22,7 +14,7 @@
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects (shared libraries)
 *.dll
 *.so
 *.so.*
@@ -42,11 +34,37 @@
 *.idb
 *.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# IDE-specific files
+*.DS_Store
+*.vscode/
+*.vscode/*
+*.suo
+*.user
+*.aps
+*.pch
+*.vs
+*.ncb
+*.opensdf
+*.sdf
+*.vcxproj*
+*.vcproj*
+*.pidb
+*.opendb
+*.VC.db
+*.VC.db-shm
+*.VC.db-wal
+*.VC.opendb
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CMakeLists.txt.user
+
+# Build directories
+build/
+Debug/
+Release/
+x64/
+x86/
