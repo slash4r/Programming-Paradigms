@@ -167,6 +167,75 @@ void find_substring(char* substring) {
     }
 }
 
+// does not work
+void input_text(int line_index, int pos) {
+    int line_count = 0;
+    int pos_count = 0;
+    int j = 0;
+    for (int i = 0; i < text_inputs_count && line_count != line_index; i++) {
+        char* string = text[i];
+        while (line_count != line_index)
+        {
+			if (string[0] == '\n') {
+				line_count += 1;
+                j = i + 1;
+			}
+            if (string[0] == '\0')
+            {
+                break;
+            }
+			string++;
+        }
+
+    }
+
+    for (size_t i = j; i < text_inputs_count; i++)
+    {
+        char* string = text[i];
+        int to_cut = 0;
+        if (string[0] == '\t') {
+			string++;
+		}
+        int string_length = strlen(string);
+        if (string_length + pos_count <= pos)
+        {
+            pos_count += string_length;
+            to_cut = pos_count;
+        }
+        else
+        {
+            char substring[LINE_LENGTH];
+            printf("Enter the substring to input: ");
+            if (fgets(substring, LINE_LENGTH, stdin) != NULL)
+            {
+                substring[strcspn(substring, "\n")] = 0;
+            }
+            int new_string_length = string_length + strlen(substring);
+            char* new_string = (char*)realloc(text[i], (new_string_length + 1) * sizeof(char*));
+            if (new_string == NULL) {
+				printf("Memory allocation failed\n");
+				exit(1);
+			}
+            pos -= pos_count;
+            for (size_t i = 0; i < pos; i++)
+            {
+                new_string[i] = string[i];
+            }
+            for (size_t i = pos; i < pos + strlen(substring); i++)
+            {
+                new_string[i] = substring[i];
+            }
+            for (size_t i = pos + strlen(substring); i < new_string_length; i++)
+            {
+                new_string[i] = string[i- strlen(substring)];
+            }
+            text[j] = new_string;
+
+        }
+    }
+    printf("%d and %d", line_count,  pos_count);
+}  
+
 
 
 void parse_command(char* command) {
@@ -230,6 +299,15 @@ void parse_command(char* command) {
     {
         add_text("\n\t");
     }
+    else if (strcmp(command, "input") == 0)
+	{
+		int line_index, pos;
+		printf("Enter the line index: ");
+		scanf_s("%d", &line_index);
+		printf("Enter the position: ");
+		scanf_s("%d", &pos);
+		input_text(line_index, pos);
+	}
     else {
         printf("tetstststs");
         printf("The command is not implemented\n");
