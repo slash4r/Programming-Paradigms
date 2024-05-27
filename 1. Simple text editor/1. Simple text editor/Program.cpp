@@ -239,7 +239,7 @@ void input_text(int line_index, int pos) {
 
 
 void parse_command(char* command) {
-    system("cls");
+    //system("cls");
     
 
     // string comparison   true == 0
