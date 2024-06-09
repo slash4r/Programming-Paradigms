@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string.h>
+
 using namespace std;
 
 const int COMMAND_LENGTH = 32;
@@ -32,11 +32,19 @@ public:
 	void insert_text(char* string, int string_lenght) {
 		// copy string to text
 		copy(string, string + string_lenght, text + line_length);
-		line_length += string_lenght;
+		line_length += string_lenght; // error here maybe. lines_length is not updated
 		text[line_length] = '\0';
 		cout << "Text inserted: " << string << endl;
 	};
 
+	void print_text() {
+		// blank line
+		if (line_length == 0)
+		{
+			return;
+		}
+		cout << text;
+	};
 private:
 	int line_length = 0;
 	int line_capacity = 128;
@@ -48,9 +56,10 @@ class Text
 public:
 	Text()
 	{
-		Line* lines = new Line[lines_capacity];
+		lines = new Line[lines_capacity];
 		current_line = lines[0];
 	};
+
 	void add_text(char* string) {
 		int string_length = strlen(string);
 		int current_line_length = current_line.get_length();
@@ -63,12 +72,51 @@ public:
 		}
 		cout << "Adding text to the current line...\n";
 		current_line.insert_text(string, string_length);
-	}
+
+		// update the core text array
+		lines[lines_count - 1] = current_line;
+	};
+
+	void new_line() {
+		
+		if (lines_count == lines_capacity)
+		{
+			lines_capacity *= 2;
+			Line* lines_buffer = new Line[lines_capacity];
+			// copy lines to lines_buffer
+			copy(lines, lines + lines_count, lines_buffer);
+			delete[] lines;  // implement destructor for Line class in the future!!!
+			lines = lines_buffer;
+
+			cout << "Lines capacity increased to " << lines_capacity << endl;
+		}
+
+		current_line = lines[lines_count];
+		lines_count++;
+		cout << "New line created!\n";
+	};
+
+	void print_text() {
+		cout << "Printing the text...\n";
+
+		for (size_t i = 0; i < lines_count; i++)
+		{
+			Line printing_line = lines[i];
+			cout << "\t";
+			printing_line.print_text();
+			cout << "\n";
+		}
+	};
+
+	void save_to_file() {
+		cout << "Saving the text to the file...\n";
+	};
 
 	private:
-	int lines_count = 0;
+	int lines_count = 1;
 	int lines_capacity = 16;
 	Line current_line;
+	Line* lines = nullptr;
 };
 
 
@@ -77,7 +125,7 @@ void exit();
 
 int main() {
 	// for testing purposes
-	char command[] = "asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
+	char command[] = "FIRST****asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
 	char input[INPUT_LENGTH];
 	Text text;
 
@@ -88,8 +136,20 @@ int main() {
 	{
 		cout << ">> ";
 		// change it later!!
-		cin >> input; // input buffer ??? (cin)
+		//cin >> command; // input buffer ??? (cin)
 		text.add_text(command);
+		text.new_line();
+		char command2[] = "SECOND////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
+		text.add_text(command2);
+		text.new_line();
+		char command3[] = "THIRD////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
+		text.add_text(command3);
+		text.new_line();
+		text.new_line();
+		char command4[] = "FOURTH////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
+		text.add_text(command4);
+		text.print_text();
+		cin >> input;
 		
 	}
 
@@ -105,5 +165,7 @@ void print_help() {
 
 void exit() {
 	cout << "Exiting the program...\n";
+	// clear all the memory
+
 	exit(0);
 }
