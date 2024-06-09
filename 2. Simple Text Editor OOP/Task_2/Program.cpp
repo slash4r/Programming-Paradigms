@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -16,7 +17,11 @@ public:
 	};
 	int get_capacity() {
 		return line_capacity;
-	}
+	};
+	char* get_text() {
+		return text;
+	};
+
 
 	void ensure_capacity() {
 		line_capacity *= 2;
@@ -108,8 +113,86 @@ public:
 		}
 	};
 
-	void save_to_file() {
-		cout << "Saving the text to the file...\n";
+	void save_to_file(char* filename) {
+		const int name_length = strlen(filename);
+		strcat_s(filename, name_length + 5, ".txt");
+		cout << "Saving the text to the file: " << filename << endl;
+
+		ofstream file; // create and write to file
+		file.open(filename);
+
+		if (!file.is_open())
+		{
+			cout << "Failed to open the file: " << filename << endl;
+			return;
+		}
+		
+		for (size_t i = 0; i < lines_count; i++)
+		{
+			Line saving_line = lines[i];
+			char* saving_text = saving_line.get_text();
+
+			file << "\t";
+			file << saving_text;
+			file << "\n";
+		}
+
+		cout << "Text saved to the file: " << filename << endl;
+		file.close();
+	};
+
+	void read_lines(ifstream& file, char* string, int string_length) {
+
+	};
+
+
+	void load_from_file(char* filename) {
+		const int name_length = strlen(filename);
+		strcat_s(filename, name_length + 5, ".txt");
+		cout << "Loading the text from the file: " << filename << endl;
+
+		ifstream file; // read from file
+		file.open(filename);
+
+		if (!file.is_open())
+		{
+			cout << "Failed to open the file: " << filename << endl;
+			return;
+		}
+		int size = 32;
+		char* string = new char[size];
+		char c;
+		int counter = 0;
+		while (file.get(c))
+		{
+			if (counter == size - 1)
+			{
+				int new_size = size * 2;
+				char* new_string = new char[new_size];
+				strcpy_s(new_string, new_size, string);
+				delete[] string;
+
+				size = new_size;
+				string = new_string;
+			}
+			if (c == '\n')
+			{
+				string[counter] = '\0';
+				add_text(string);
+				new_line();
+				counter = 0;
+			}
+			else if (c == '\t')
+			{
+				continue;
+			}
+			else
+			{
+				string[counter] = c;
+				counter++;
+			}
+		}
+		cout << string;
 	};
 
 	private:
@@ -137,7 +220,9 @@ int main() {
 		cout << ">> ";
 		// change it later!!
 		//cin >> command; // input buffer ??? (cin)
-		text.add_text(command);
+
+
+		/*text.add_text(command);
 		text.new_line();
 		char command2[] = "SECOND////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
 		text.add_text(command2);
@@ -149,8 +234,15 @@ int main() {
 		char command4[] = "FOURTH////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
 		text.add_text(command4);
 		text.print_text();
-		cin >> input;
+		cout << "\n\nSAVE TO FILE\n\n";
+		cin >> command;
+		text.save_to_file(command);*/
 		
+
+		cin >> input;
+		text.load_from_file(input);
+		
+		text.print_text();
 	}
 
 	return 0;
