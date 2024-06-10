@@ -215,7 +215,7 @@ public:
 		}
 	};
 
-	void insert_text(char* string) {
+	void insert_into_text(char* string) {
 		int line;
 		int index;
 		cout << "Enter the line number and the index: ";
@@ -231,20 +231,19 @@ public:
 		cout << "Inserting text to the line...\n";
 
 		int buffer_size = current_line_length - index;
-		char* buffer = new char[buffer_size + 1];
+		char* buffer = new char[buffer_size + 1]; // +1 for '\0'!!!
 		char* current_text = current_line.get_text();
 		for (size_t i = 0; i < buffer_size; i++)
 		{
 			buffer[i] = current_text[i + index];
-
-			current_text[i + index] = string[i];
+			current_text[i + index] = string[i]; // is it correct?
 		}
 		buffer[buffer_size] = '\0';
 
 		strcat_s(current_text, current_line.get_capacity(), buffer);
 		lines[line] = current_line;
 
-		// delete buffer
+		// delete buffer!!
 		delete[] buffer;
 	};
 	private:
@@ -256,11 +255,14 @@ public:
 
 
 void print_help();
+void parse_command(char* command, Text& text);
+char* get_input();
 void exit();
+
 
 int main() {
 	// for testing purposes
-	char command[] = "FIRST****asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
+	char command[COMMAND_LENGTH];
 	char input[INPUT_LENGTH];
 	Text text;
 
@@ -270,43 +272,107 @@ int main() {
 	while (true)
 	{
 		cout << ">> ";
-		// change it later!!
-		//cin >> command; // input buffer ??? (cin)
-
-
-		/*text.add_text(command);
-		text.new_line();
-		char command2[] = "SECOND////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
-		text.add_text(command2);
-		text.new_line();
-		char command3[] = "THIRD////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
-		text.add_text(command3);
-		text.new_line();
-		text.new_line();
-		char command4[] = "FOURTH////asdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegfasdfsggsdgdfsgdfshsdjshdjhgsdfjsdgfjhsdgfshdjgfdshjgfsdhfgsdjgfsdhjgfsdhjfjsdgfufeyugfwyuegfwegf";
-		text.add_text(command4);
-		text.print_text();
-		cout << "\n\nSAVE TO FILE\n\n";
-		cin >> command;
-		text.save_to_file(command);*/
-		
-
-		cin >> input;
-		text.load_from_file(input);
-		
-		text.print_text();
-		cin >> input;
-		text.insert_text(input);
+		char* command = get_input();
+		parse_command(command, text);
 	}
 
 	return 0;
 }
 
+void parse_command(char* command, Text& text) {
+	if (!strcmp(command, "help"))
+	{
+		print_help();
+	}
+	else if (!strcmp(command, "exit"))
+	{
+		cout << "Thank you for using the text editor!\n";
+		cout << "Exiting the program...\n";
+		exit();
+	}
+	else if (!strcmp(command, "add"))
+	{
+		cout << "Enter the text to add: ";
+		char* input = get_input();
+		text.add_text(input);
+	}
+	else if (strcmp(command, "print") == 0)
+	{
+		text.print_text();
+	}
+	else if (strcmp(command, "new") == 0)
+	{
+		text.new_line();
+	}
+	else if (strcmp(command, "save") == 0)
+	{
+		cout << "Enter the filename: ";
+		char* filename = get_input();
+		text.save_to_file(filename);
+	}
+	else if (strcmp(command, "load") == 0)
+	{
+		cout << "Enter the filename: ";
+		char* filename = get_input();
+		text.load_from_file(filename);
+	}
+	else if (strcmp(command, "search") == 0)
+	{
+		cout << "Enter the substring: ";
+		char* substring = get_input();
+		text.substring_search(substring);
+	}
+	else if (strcmp(command, "insert") == 0)
+	{
+		cout << "Enter the text to insert: ";
+		char* string = get_input();
+		text.insert_into_text(string);
+	}
+	else
+	{
+		cout << "Unknown command. Type 'help' to see the list of commands.\n";
+	}
+}
+
+char* get_input() {
+	char* string = new char[INPUT_LENGTH];
+	// get the input from the user
+	char* input = new char[1];
+	input[0] = '\0';
+	while(fgets(string, INPUT_LENGTH, stdin) != NULL)
+	{
+		int new_input_length = strlen(string) + strlen(input);
+
+		char* new_input = new char[new_input_length + 1];
+		strcpy_s(new_input, new_input_length + 1, input);
+		strcat_s(new_input, new_input_length + 1, string);
+		
+		delete[] input;
+		input = new_input;
+		// infinite loop here
+
+		if (string[strlen(string) - 1] == '\n')
+		{
+			break;
+		}
+	}
+	// delete string!!!
+	delete[] string;
+	input[strlen(input) - 1] = '\0';
+	return input;
+}
+
 void print_help() {
 	cout << "The list of commands:\n\n";
-	cout << "help - print this help message\n";
-	cout << "exit - exit the program\n\n";
-	cout << "add  - a new string to the text editor\n";
+	cout << "help   - print this help message\n";
+	cout << "exit   - exit the program\n\n";
+	cout << "add    - a new string to the text editor\n";
+	cout << "print  - print the text\n";
+	cout << "new    - create a new line\n";
+	cout << "save   - save the text to the file\n";
+	cout << "load   - load the text from the file\n";
+	cout << "search - search for the substring in the text\n";
+	cout << "insert - insert the text into the line\n\n";
 }
 
 void exit() {
