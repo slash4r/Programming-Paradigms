@@ -141,11 +141,6 @@ public:
 		file.close();
 	};
 
-	void read_lines(ifstream& file, char* string, int string_length) {
-
-	};
-
-
 	void load_from_file(char* filename) {
 		const int name_length = strlen(filename);
 		strcat_s(filename, name_length + 5, ".txt");
@@ -163,6 +158,8 @@ public:
 		char* string = new char[size];
 		char c;
 		int counter = 0;
+
+		// read the file char by char
 		while (file.get(c))
 		{
 			if (counter == size - 1)
@@ -192,9 +189,64 @@ public:
 				counter++;
 			}
 		}
-		cout << string;
+
+		// if the last line without '\n'
+		if (counter > 0) {
+			string[counter] = '\0';
+			add_text(string);
+		}
+
+		//cout << string;
+		delete[] string;
+		file.close();
 	};
 
+	void substring_search(char* substring) {
+		cout << "Searching for the substring: " << substring << endl;
+		for (size_t i = 0; i < lines_count; i++)
+		{
+			Line line = lines[i];
+			char* text = line.get_text();
+			char* match = strstr(text, substring);
+			while (match != NULL || match != nullptr) {
+				cout << "Found substring in line " << i << " at position " << (match - text) << endl;
+				match = strstr(match + 1, substring);
+			}	
+		}
+	};
+
+	void insert_text(char* string) {
+		int line;
+		int index;
+		cout << "Enter the line number and the index: ";
+		cin >> line >> index;
+
+		Line& current_line = lines[line];
+		int current_line_length = current_line.get_length();
+		int string_length = strlen(string);
+		while (current_line_length + string_length > current_line.get_capacity())
+		{
+			current_line.ensure_capacity();
+		}
+		cout << "Inserting text to the line...\n";
+
+		int buffer_size = current_line_length - index;
+		char* buffer = new char[buffer_size + 1];
+		char* current_text = current_line.get_text();
+		for (size_t i = 0; i < buffer_size; i++)
+		{
+			buffer[i] = current_text[i + index];
+
+			current_text[i + index] = string[i];
+		}
+		buffer[buffer_size] = '\0';
+
+		strcat_s(current_text, current_line.get_capacity(), buffer);
+		lines[line] = current_line;
+
+		// delete buffer
+		delete[] buffer;
+	};
 	private:
 	int lines_count = 1;
 	int lines_capacity = 16;
@@ -243,6 +295,8 @@ int main() {
 		text.load_from_file(input);
 		
 		text.print_text();
+		cin >> input;
+		text.insert_text(input);
 	}
 
 	return 0;
