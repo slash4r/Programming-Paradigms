@@ -276,6 +276,13 @@ public:
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
 
+		if (line < 0 || line >= lines_count)
+		{
+			cout << "Invalid line number!\n";
+			return;
+		};
+
+
 		Line& current_line = lines[line];
 		int current_line_length = current_line.get_length();
 
@@ -287,12 +294,78 @@ public:
 		current_line.delete_text(index, delete_length);	
 	}
 
+	void copy_text(int line, int index, int symbols) {
+		if(line < 0 || line >= lines_count || symbols <= 0)
+		{
+			cout << "Invalid input!\n";
+			return;
+		}
+		Line& current_line = lines[line];
+		int current_line_length = current_line.get_length();
+		char* current_text = current_line.get_text();
+
+		if (index >= current_line_length || index < 0)
+		{
+			cout << "Invalid index!\n";
+			return;
+		}
+
+		if (index + symbols > current_line_length)
+		{
+			cout << "Symbols to copy exceed the line length!\n";
+			return;
+		}
+		cout << "Copying text...\n";
+		delete[] text_clipboard;
+		text_clipboard = new char[symbols + 1];
+		
+		for (size_t i = index; i < index + symbols; i++) {
+
+			text_clipboard[i - index] = current_text[i];
+		}
+		text_clipboard[symbols] = '\0';
+		cout << "Text copied to the clipboard!\n";
+		cout << "Clipboard is: " << text_clipboard << endl;
+	};
+
+	void paste_text(int line, int index) {
+		if (line < 0 || line >= lines_count)
+		{
+			cout << "Invalid input!\n";
+			return;
+		}
+		Line& current_line = lines[line];
+		int current_line_length = current_line.get_length();
+		char* current_text = current_line.get_text();
+
+		if (index >= current_line_length || index < 0)
+		{
+			cout << "Invalid index!\n";
+			return;
+		}
+
+		if (text_clipboard == nullptr || text_clipboard == NULL)
+		{
+			cout << "Clipboard is empty!\n";
+			return;
+		}
+		cout << "Pasting text...\n";
+		int clipboard_length = strlen(text_clipboard);
+		int new_line_length = current_line_length + clipboard_length;
+
+		while (new_line_length > current_line.get_capacity())
+		{
+			current_line.ensure_capacity();
+		}
+		current_line.insert_text(index, text_clipboard, clipboard_length);
+	};
 
 	private:
 	int lines_count = 1;
 	int lines_capacity = 16;
 	Line current_line;
 	Line* lines = nullptr;
+	char* text_clipboard = nullptr;
 };
 
 
@@ -336,44 +409,65 @@ void parse_command(char* command, Text& text) {
 		char* input = get_input();
 		text.add_text(input);
 	}
-	else if (strcmp(command, "print") == 0)
+	else if (!strcmp(command, "print"))
 	{
 		text.print_text();
 	}
-	else if (strcmp(command, "new") == 0)
+	else if (!strcmp(command, "new"))
 	{
 		text.new_line();
 	}
-	else if (strcmp(command, "save") == 0)
+	else if (!strcmp(command, "save"))
 	{
 		cout << "Enter the filename: ";
 		char* filename = get_input();
 		text.save_to_file(filename);
 	}
-	else if (strcmp(command, "load") == 0)
+	else if (!strcmp(command, "load"))
 	{
 		cout << "Enter the filename: ";
 		char* filename = get_input();
 		text.load_from_file(filename);
 	}
-	else if (strcmp(command, "search") == 0)
+	else if (!strcmp(command, "search"))
 	{
 		cout << "Enter the substring: ";
 		char* substring = get_input();
 		text.substring_search(substring);
 	}
-	else if (strcmp(command, "insert") == 0)
+	else if (!strcmp(command, "insert"))
 	{
 		cout << "Enter the text to insert: ";
 		char* string = get_input();
 		text.insert_into_text(string);
 	}
-	else if (strcmp(command, "delete") == 0)
+	else if (!strcmp(command, "delete"))
 	{
 		int delete_length;
 		cout << "Enter the delete length: ";
 		cin >> delete_length;
 		text.delete_from_text(delete_length);
+	}
+	else if (!strcmp(command, "copy"))
+	{
+		int line;
+		int index;
+		int symbols;
+		cout << "Enter the line number, the index and the symbols: ";
+		cin >> line >> index >> symbols;
+		text.copy_text(line, index, symbols);
+	}
+	else if (!strcmp(command, "paste"))
+	{
+		int line;
+		int index;
+		cout << "Enter the line number and the index: ";
+		cin >> line >> index;
+		text.paste_text(line, index);
+	}
+	else if (!strcmp(command, "clear"))
+	{
+		system("cls");
 	}
 	else
 	{
@@ -421,6 +515,9 @@ void print_help() {
 	cout << "search - search for the substring in the text\n";
 	cout << "insert - insert the text into the line\n";
 	cout << "delete - delete the text from the line\n";
+	cout << "copy   - copy the text to the clipboard\n";
+	cout << "paste  - paste the text from the clipboard\n";
+	cout << "clear  - clear the console\n";
 	cout << endl;
 }
 
