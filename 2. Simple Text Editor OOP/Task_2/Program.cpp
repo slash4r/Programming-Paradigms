@@ -10,6 +10,7 @@ class Line {
 public:
 	Line() {
 		text = new char[line_capacity];
+		text[0] = '\0';
 	};
 
 	int get_length() {
@@ -34,12 +35,40 @@ public:
 		cout << "Capacity increased to " << line_capacity << endl;
 	};
 
-	void insert_text(char* string, int string_lenght) {
+	void append_text(char* string, int string_lenght) {
 		// copy string to text
 		copy(string, string + string_lenght, text + line_length);
 		line_length += string_lenght; // error here maybe. lines_length is not updated
 		text[line_length] = '\0';
-		cout << "Text inserted: " << string << endl;
+		cout << "Text added: " << string << endl;
+	};
+	void insert_text(int index, char* string, int string_length) {
+		int buffer_size = line_length - index;
+		char* buffer = new char[buffer_size + 1]; // +1 for '\0'!!!
+
+		// shift the text to the right
+		for (size_t i = 0; i < buffer_size; i++)
+		{
+			buffer[i] = text[index + i];
+			text[index + i] = string[i]; // is it correct?
+		}
+		buffer[buffer_size] = '\0';
+		strcat_s(text, line_capacity, buffer);
+		
+		line_length += string_length;
+		text[line_length] = '\0';
+		cout << "Text inserted!\n";
+
+		delete[] buffer;
+	};
+	void delete_text(int index, int delete_length) {
+		for (size_t i = index; i < line_length - index - delete_length; i++)
+		{
+			text[i] = text[i + delete_length];
+		}
+		line_length -= delete_length;
+		text[line_length] = '\0';
+		cout << "Text deleted!\n";
 	};
 
 	void print_text() {
@@ -76,7 +105,7 @@ public:
 			current_line_capacity = current_line.get_capacity();
 		}
 		cout << "Adding text to the current line...\n";
-		current_line.insert_text(string, string_length);
+		current_line.append_text(string, string_length);
 
 		// update the core text array
 		lines[lines_count - 1] = current_line;
@@ -221,31 +250,44 @@ public:
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
 
+		if(line < 0 || line >= lines_count || index < 0)
+		{
+			cout << "Invalid line number!\n";
+			return;
+		}
+
 		Line& current_line = lines[line];
 		int current_line_length = current_line.get_length();
 		int string_length = strlen(string);
+
 		while (current_line_length + string_length > current_line.get_capacity())
 		{
 			current_line.ensure_capacity();
 		}
 		cout << "Inserting text to the line...\n";
 
-		int buffer_size = current_line_length - index;
-		char* buffer = new char[buffer_size + 1]; // +1 for '\0'!!!
-		char* current_text = current_line.get_text();
-		for (size_t i = 0; i < buffer_size; i++)
-		{
-			buffer[i] = current_text[i + index];
-			current_text[i + index] = string[i]; // is it correct?
-		}
-		buffer[buffer_size] = '\0';
+		current_line.insert_text(index, string, string_length);
 
-		strcat_s(current_text, current_line.get_capacity(), buffer);
-		lines[line] = current_line;
-
-		// delete buffer!!
-		delete[] buffer;
 	};
+
+	void delete_from_text(int delete_length) {
+		int line;
+		int index;
+		cout << "Enter the line number and the index: ";
+		cin >> line >> index;
+
+		Line& current_line = lines[line];
+		int current_line_length = current_line.get_length();
+
+		if (index < 0 || index >= current_line_length || delete_length <= 0) {
+			cout << "Invalid index or delete length!\n";
+			return;
+		}
+		cout << "Deleting text from the line...\n";
+		current_line.delete_text(index, delete_length);	
+	}
+
+
 	private:
 	int lines_count = 1;
 	int lines_capacity = 16;
@@ -258,7 +300,6 @@ void print_help();
 void parse_command(char* command, Text& text);
 char* get_input();
 void exit();
-
 
 int main() {
 	// for testing purposes
@@ -275,7 +316,6 @@ int main() {
 		char* command = get_input();
 		parse_command(command, text);
 	}
-
 	return 0;
 }
 
@@ -328,6 +368,13 @@ void parse_command(char* command, Text& text) {
 		char* string = get_input();
 		text.insert_into_text(string);
 	}
+	else if (strcmp(command, "delete") == 0)
+	{
+		int delete_length;
+		cout << "Enter the delete length: ";
+		cin >> delete_length;
+		text.delete_from_text(delete_length);
+	}
 	else
 	{
 		cout << "Unknown command. Type 'help' to see the list of commands.\n";
@@ -372,7 +419,9 @@ void print_help() {
 	cout << "save   - save the text to the file\n";
 	cout << "load   - load the text from the file\n";
 	cout << "search - search for the substring in the text\n";
-	cout << "insert - insert the text into the line\n\n";
+	cout << "insert - insert the text into the line\n";
+	cout << "delete - delete the text from the line\n";
+	cout << endl;
 }
 
 void exit() {
