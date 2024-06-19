@@ -13,6 +13,13 @@ public:
 		text[0] = '\0';
 	};
 
+	Line(const Line& other) {
+		line_length = other.line_length;
+		line_capacity = other.line_capacity;
+		text = new char[line_capacity];
+		strcpy_s(text, line_capacity, other.text);
+	};
+
 	int get_length() {
 		return line_length;
 	};
@@ -98,13 +105,23 @@ private:
 	char* text = nullptr;
 };
 
-class Text
-{
+class Text {
 public:
 	Text()
 	{
 		lines = new Line[lines_capacity];
 		current_line = lines[0];
+	};
+
+	Text(const Text& other) {
+		lines_count = other.lines_count;
+		lines_capacity = other.lines_capacity;
+		lines = new Line[lines_capacity];
+		for (size_t i = 0; i < lines_count; i++)
+		{
+			lines[i] = Line(other.lines[i]);
+		}
+		current_line = Line(other.current_line);
 	};
 
 	void add_text(char* string) {
@@ -396,6 +413,10 @@ public:
 		current_line.insert_replace(index, string, string_length);
 	};
 
+	Text* copy_me() {
+		return new Text(*this);
+	}
+
 	private:
 	int lines_count = 1;
 	int lines_capacity = 16;
@@ -404,9 +425,121 @@ public:
 	char* text_clipboard = nullptr;
 };
 
+class BufferText {
+public:
+	BufferText() {
+		for (size_t i = 0; i < 3; i++)
+		{
+			buffers[i] = Text();
+		}
+		current_text = Text();
+		counter = 0;
+		undo_steps = 0;
+	};
+
+	void update_buffer(Text& text)
+	{
+		if (counter == 0)
+		{
+			buffers[counter] = Text(current_text);
+			cout << "Buffer 1 updated!\n";
+			buffers[counter].print_text();
+			undo_steps = 0;
+		}
+		else if (counter == 1)
+		{
+			buffers[counter] = Text(current_text);
+			cout << "Buffer 2 updated!\n";
+			buffers[counter].print_text();
+			undo_steps = 0;
+		
+		}
+		else if (counter == 2)
+		{
+			buffers[counter] = Text(current_text);
+			cout << "Buffer 3 updated!\n";
+			buffers[counter].print_text();
+			undo_steps = 0;
+		}
+		
+		current_text = Text(text);
+		counter++;
+		counter %= 3;
+	};
+
+	void undo(Text& text) {		
+		if (undo_steps == 0)
+		{
+			next_redo = current_text;
+		}
+		if (undo_steps == 3)
+		{
+			cout << "Nothing to undo!\n";
+			return;
+		}
+		else if (counter == 0)
+		{
+			text = buffers[2];
+			counter = 2;
+			undo_steps++;
+		}
+		else if (counter == 1)
+		{
+			text = buffers[counter - 1];
+			counter = 0;
+			undo_steps++;
+		}
+		else if (counter == 2)
+		{
+			text = buffers[counter - 1];
+			counter = 1;
+			undo_steps++;
+		}
+	};
+
+	void redo(Text& text) {
+		if (undo_steps == 0)
+		{
+			cout << "Nothing to redo!\n";
+			return;
+		}
+		if (undo_steps == 1)
+		{
+			text = next_redo;
+			undo_steps--;
+			counter = (counter + 1) % 3;
+		}
+		else if (counter == 0)
+		{
+			text = buffers[counter + 1];
+			counter = 1;
+			undo_steps--;
+		}
+		else if (counter == 1)
+		{
+			text = buffers[counter + 1];
+			counter = 2;
+			undo_steps--;
+		}
+		else if (counter == 2)
+		{
+			text = buffers[counter + 1];
+			counter = 0;
+			undo_steps--;
+		}
+		
+	};
+
+private:
+	int counter;
+	int undo_steps;
+	Text buffers[3];
+	Text current_text;
+	Text next_redo;
+};
 
 void print_help();
-void parse_command(char* command, Text& text);
+void parse_command(char*, Text&, BufferText&);
 char* get_input();
 void exit();
 
@@ -415,6 +548,7 @@ int main() {
 	char command[COMMAND_LENGTH];
 	char input[INPUT_LENGTH];
 	Text text;
+	BufferText buffer;
 
 	cout << "Welcome to the console - based text editor!\n";
 	cout << "Type 'help' to see the list of commands.\n\n";
@@ -423,12 +557,12 @@ int main() {
 	{
 		cout << ">> ";
 		char* command = get_input();
-		parse_command(command, text);
+		parse_command(command, text, buffer);
 	}
 	return 0;
 }
 
-void parse_command(char* command, Text& text) {
+void parse_command(char* command, Text& text, BufferText& buffer) {
 	if (!strcmp(command, "help"))
 	{
 		print_help();
@@ -443,6 +577,7 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the text to add: ";
 		char* input = get_input();
 		text.add_text(input);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "print"))
 	{
@@ -451,6 +586,7 @@ void parse_command(char* command, Text& text) {
 	else if (!strcmp(command, "new"))
 	{
 		text.new_line();
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "save"))
 	{
@@ -463,6 +599,7 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the filename: ";
 		char* filename = get_input();
 		text.load_from_file(filename);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "search"))
 	{
@@ -475,6 +612,7 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the text to insert: ";
 		char* string = get_input();
 		text.insert_into_text(string);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "delete"))
 	{
@@ -484,6 +622,7 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the line number, the index and the delete length: ";
 		cin >> line >> index >> delete_length;
 		text.delete_from_text(line, index, delete_length);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "copy"))
 	{
@@ -501,6 +640,7 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
 		text.paste_text(line, index);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "cut"))
 	{
@@ -510,16 +650,26 @@ void parse_command(char* command, Text& text) {
 		cout << "Enter the line number, the index and the symbols: ";
 		cin >> line >> index >> symbols;
 		text.cut_text(line, index, symbols);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "replace"))
 	{
 		cout << "Enter the text to insert and replace: ";
 		char* string = get_input();
 		text.insert_replace(string);
+		buffer.update_buffer(text);
 	}
 	else if (!strcmp(command, "clear"))
 	{
 		system("cls");
+	}
+	else if (!strcmp(command, "undo"))
+	{
+		buffer.undo(text);
+	}
+	else if (!strcmp(command, "redo"))
+	{
+		buffer.redo(text);
 	}
 	else
 	{
@@ -573,6 +723,8 @@ void print_help() {
 	cout << "replace - insert and replace the text\n";
 
 	cout << "clear   - clear the console\n";
+	cout << "undo    - undo the last action\n";
+	cout << "redo    - redo the last action\n";
 	cout << endl;
 }
 
