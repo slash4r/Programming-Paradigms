@@ -57,12 +57,14 @@ public:
 		for (size_t i = 0; i < buffer_size; i++)
 		{
 			buffer[i] = text[index + i];
-			text[index + i] = string[i]; // is it correct?
+			//text[index + i] = string[i]; // is it correct?
 		}
 		buffer[buffer_size] = '\0';
+		text[index] = '\0';
+		strcat_s(text, line_capacity, string);
 		strcat_s(text, line_capacity, buffer);
 		
-		line_length += string_length;
+		this->line_length += string_length;
 		text[line_length] = '\0';
 		cout << "Text inserted!\n";
 
@@ -70,12 +72,14 @@ public:
 	};
 
 	void insert_replace(int index, char* string, int string_length) {
-		// copy string to text???
 		copy(string, string + string_length, text + index);
 		cout << "Text inserted and replaced!\n";
 
-		text[index + string_length] = '\0';
-		line_length = index + string_length;
+		//text[index + string_length] = '\0';
+		if (index + string_length > line_length) {
+			line_length = index + string_length;
+			text[line_length] = '\0';
+		}
 	};
 
 	void delete_text(int index, int delete_length) {
@@ -129,32 +133,32 @@ public:
 
 		while (string_length + current_line_length > current_line_capacity)
 		{
-			current_line.ensure_capacity();
+			this->current_line.ensure_capacity();
 			current_line_capacity = current_line.get_capacity();
 		}
 		cout << "Adding text to the current line...\n";
-		current_line.append_text(string, string_length);
+		this->current_line.append_text(string, string_length);
 
 		// update the core text array
-		lines[lines_count - 1] = current_line;
+		this->lines[lines_count - 1] = current_line;
 	};
 
 	void new_line() {
 
 		if (lines_count == lines_capacity)
 		{
-			lines_capacity *= 2;
+			this->lines_capacity *= 2;
 			Line* lines_buffer = new Line[lines_capacity];
 			// copy lines to lines_buffer
 			copy(lines, lines + lines_count, lines_buffer);
 			delete[] lines;  // implement destructor for Line class in the future!!!
-			lines = lines_buffer;
+			this->lines = lines_buffer;
 
 			cout << "Lines capacity increased to " << lines_capacity << endl;
 		}
 
-		current_line = lines[lines_count];
-		lines_count++;
+		this->current_line = lines[lines_count];
+		this->lines_count++;
 		cout << "New line created!\n";
 	};
 
@@ -277,6 +281,7 @@ public:
 		int index;
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
+		cin.ignore();
 
 		if (line < 0 || line >= lines_count || index < 0)
 		{
@@ -284,17 +289,17 @@ public:
 			return;
 		}
 
-		Line& current_line = lines[line];
+		Line& current_line = this->lines[line];
 		int current_line_length = current_line.get_length();
 		int string_length = strlen(string);
 
-		while (index + string_length > current_line.get_capacity())
+		while (current_line_length + string_length > current_line.get_capacity())
 		{
 			current_line.ensure_capacity();
 		}
 		cout << "Inserting text to the line...\n";
 
-		current_line.insert_replace(index, string, string_length);
+		current_line.insert_text(index, string, string_length);
 	};
 
 	void delete_from_text(int line, int index, int delete_length) {
@@ -305,7 +310,7 @@ public:
 		};
 
 
-		Line& current_line = lines[line];
+		Line& current_line = this->lines[line];
 		int current_line_length = current_line.get_length();
 
 		if (index < 0 || index >= current_line_length || delete_length <= 0 || delete_length > current_line_length - index) {
@@ -322,7 +327,7 @@ public:
 			cout << "Invalid input!\n";
 			return;
 		}
-		Line& current_line = lines[line];
+		Line& current_line = this->lines[line];
 		int current_line_length = current_line.get_length();
 		char* current_text = current_line.get_text();
 
@@ -338,14 +343,14 @@ public:
 			return;
 		}
 		cout << "Copying text...\n";
-		delete[] text_clipboard;
-		text_clipboard = new char[symbols + 1];
+		delete[] this->text_clipboard;
+		this->text_clipboard = new char[symbols + 1];
 		
 		for (size_t i = index; i < index + symbols; i++) {
 
-			text_clipboard[i - index] = current_text[i];
+			this->text_clipboard[i - index] = current_text[i];
 		}
-		text_clipboard[symbols] = '\0';
+		this->text_clipboard[symbols] = '\0';
 		cout << "Text copied to the clipboard!\n";
 		cout << "Clipboard is: " << text_clipboard << endl;
 	};
@@ -356,7 +361,7 @@ public:
 			cout << "Invalid input!\n";
 			return;
 		}
-		Line& current_line = lines[line];
+		Line& current_line = this->lines[line];
 		int current_line_length = current_line.get_length();
 		char* current_text = current_line.get_text();
 
@@ -392,6 +397,7 @@ public:
 		int index;
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
+		cin.ignore();
 
 		if (line < 0 || line >= lines_count || index < 0)
 		{
@@ -399,16 +405,16 @@ public:
 			return;
 		}
 
-		Line& current_line = lines[line];
+		Line& current_line = this->lines[line];
 		int current_line_length = current_line.get_length(); 
 		int string_length = strlen(string);
 
-		while (current_line_length + string_length > current_line.get_capacity())
+		while (index + string_length >= current_line.get_capacity())
 		{
 			current_line.ensure_capacity();
 		}
-		cout << "Inserting text to the line...\n";
-		current_line.insert_replace(index, string, string_length);
+		cout << "Replacing text into the line...\n";
+		current_line.insert_replace(index, string, string_length); // current line is not updated
 	};
 
 	private:
@@ -424,47 +430,47 @@ public:
 	BufferText() {
 		for (size_t i = 0; i < 3; i++)
 		{	
-			buffers[i] = Text();
+			this->buffers[i] = Text();
 		}
-		current_text = Text();
-		counter = 0;
-		undo_steps = 0;
+		this->current_text = Text();
+		this->counter = 0;
+		this->undo_steps = 0;
 	};
 
 	void update_buffer(Text& text)
 	{
 		if (counter == 0)
 		{
-			buffers[counter] = Text(current_text);
+			this->buffers[counter] = Text(current_text);
 			cout << "Buffer 1 updated!\n";
 			
-			undo_steps = 0;
+			this->undo_steps = 0;
 		}
 		else if (counter == 1)
 		{
-			buffers[counter] = Text(current_text);
+			this->buffers[counter] = Text(current_text);
 			cout << "Buffer 2 updated!\n";
 			
-			undo_steps = 0;
+			this->undo_steps = 0;
 		
 		}
 		else if (counter == 2)
 		{
-			buffers[counter] = Text(current_text);
+			this->buffers[counter] = Text(current_text);
 			cout << "Buffer 3 updated!\n";
 			
-			undo_steps = 0;
+			this->undo_steps = 0;
 		}
 		
-		current_text = Text(text);
-		counter++;
-		counter %= 3;
+		this->current_text = Text(text); // error here
+		this->counter++;
+		this->counter %= 3;
 	};
 
 	void undo(Text& text) {		
 		if (undo_steps == 0)
 		{
-			next_redo = current_text;
+			this->next_redo = current_text;
 		}
 		if (undo_steps == 3)
 		{
@@ -474,17 +480,17 @@ public:
 		else if (counter == 0)
 		{
 			text = buffers[2];
-			counter = 2;
+			this->counter = 2;
 		}
 		else if (counter == 1)
 		{
 			text = buffers[counter - 1];
-			counter = 0;			
+			this->counter = 0;
 		}
 		else if (counter == 2)
 		{
 			text = buffers[counter - 1];
-			counter = 1;
+			this->counter = 1;
 		}
 		undo_steps++;
 	};
@@ -498,26 +504,26 @@ public:
 		if (undo_steps == 1)
 		{
 			text = next_redo;
-			undo_steps--;
-			counter = (counter + 1) % 3;
+			this->undo_steps--;
+			this->counter = (counter + 1) % 3;
 		}
 		else if (counter == 0)
 		{
 			text = buffers[counter + 1];
-			counter = 1;
-			undo_steps--;
+			this->counter = 1;
+			this->undo_steps--;
 		}
 		else if (counter == 1)
 		{
 			text = buffers[counter + 1];
-			counter = 2;
-			undo_steps--;
+			this->counter = 2;
+			this->undo_steps--;
 		}
 		else if (counter == 2)
 		{
 			text = buffers[counter + 1];
-			counter = 0;
-			undo_steps--;
+			this->counter = 0;
+			this->undo_steps--;
 		}
 		
 	};
@@ -730,6 +736,4 @@ void exit() {
 	exit(0);
 }
 
-
-// make destructor for classes
-// make sure to delete all the memory
+// insert_replace error
