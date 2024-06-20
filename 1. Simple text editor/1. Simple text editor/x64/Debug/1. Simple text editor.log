@@ -1,7 +1,0 @@
-﻿  Program.cpp
-C:\_GitHub\Programming-Paradigms\1. Simple text editor\1. Simple text editor\Program.cpp(146,40): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\_GitHub\Programming-Paradigms\1. Simple text editor\1. Simple text editor\Program.cpp(146,32): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
-C:\_GitHub\Programming-Paradigms\1. Simple text editor\1. Simple text editor\Program.cpp(159,20): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type '__int64'
-C:\_GitHub\Programming-Paradigms\1. Simple text editor\1. Simple text editor\Program.cpp(199,27): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\_GitHub\Programming-Paradigms\1. Simple text editor\1. Simple text editor\Program.cpp(213,35): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  1. Simple text editor.vcxproj -> C:\_GitHub\Programming-Paradigms\1. Simple text editor\x64\Debug\1. Simple text editor.exe
