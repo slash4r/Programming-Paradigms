@@ -16,8 +16,8 @@ public:
 	Line(const Line& other) {
 		line_length = other.line_length;
 		line_capacity = other.line_capacity;
-		text = new char[line_capacity];
-		strcpy_s(text, line_capacity, other.text);
+		text = new char[line_capacity + 1];
+		strcpy_s(text, line_capacity + 1, other.text);
 	};
 
 	int get_length() {
@@ -29,7 +29,6 @@ public:
 	char* get_text() {
 		return text;
 	};
-
 
 	void ensure_capacity() {
 		line_capacity *= 2;
@@ -89,8 +88,6 @@ public:
 		cout << "Text deleted!\n";
 	};
 
-	//void insert_replace()
-
 	void print_text() {
 		// blank line
 		if (line_length == 0)
@@ -99,6 +96,7 @@ public:
 		}
 		cout << text;
 	};
+
 private:
 	int line_length = 0;
 	int line_capacity = 128;
@@ -413,10 +411,6 @@ public:
 		current_line.insert_replace(index, string, string_length);
 	};
 
-	Text* copy_me() {
-		return new Text(*this);
-	}
-
 	private:
 	int lines_count = 1;
 	int lines_capacity = 16;
@@ -429,7 +423,7 @@ class BufferText {
 public:
 	BufferText() {
 		for (size_t i = 0; i < 3; i++)
-		{
+		{	
 			buffers[i] = Text();
 		}
 		current_text = Text();
@@ -443,14 +437,14 @@ public:
 		{
 			buffers[counter] = Text(current_text);
 			cout << "Buffer 1 updated!\n";
-			buffers[counter].print_text();
+			
 			undo_steps = 0;
 		}
 		else if (counter == 1)
 		{
 			buffers[counter] = Text(current_text);
 			cout << "Buffer 2 updated!\n";
-			buffers[counter].print_text();
+			
 			undo_steps = 0;
 		
 		}
@@ -458,7 +452,7 @@ public:
 		{
 			buffers[counter] = Text(current_text);
 			cout << "Buffer 3 updated!\n";
-			buffers[counter].print_text();
+			
 			undo_steps = 0;
 		}
 		
@@ -481,20 +475,18 @@ public:
 		{
 			text = buffers[2];
 			counter = 2;
-			undo_steps++;
 		}
 		else if (counter == 1)
 		{
 			text = buffers[counter - 1];
-			counter = 0;
-			undo_steps++;
+			counter = 0;			
 		}
 		else if (counter == 2)
 		{
 			text = buffers[counter - 1];
 			counter = 1;
-			undo_steps++;
 		}
+		undo_steps++;
 	};
 
 	void redo(Text& text) {
@@ -544,9 +536,7 @@ char* get_input();
 void exit();
 
 int main() {
-	// for testing purposes
 	char command[COMMAND_LENGTH];
-	char input[INPUT_LENGTH];
 	Text text;
 	BufferText buffer;
 
@@ -621,6 +611,7 @@ void parse_command(char* command, Text& text, BufferText& buffer) {
 		int delete_length;
 		cout << "Enter the line number, the index and the delete length: ";
 		cin >> line >> index >> delete_length;
+		cin.ignore();
 		text.delete_from_text(line, index, delete_length);
 		buffer.update_buffer(text);
 	}
@@ -631,6 +622,7 @@ void parse_command(char* command, Text& text, BufferText& buffer) {
 		int symbols;
 		cout << "Enter the line number, the index and the symbols: ";
 		cin >> line >> index >> symbols;
+		cin.ignore();
 		text.copy_text(line, index, symbols);
 	}
 	else if (!strcmp(command, "paste"))
@@ -639,6 +631,7 @@ void parse_command(char* command, Text& text, BufferText& buffer) {
 		int index;
 		cout << "Enter the line number and the index: ";
 		cin >> line >> index;
+		cin.ignore();
 		text.paste_text(line, index);
 		buffer.update_buffer(text);
 	}
@@ -649,6 +642,7 @@ void parse_command(char* command, Text& text, BufferText& buffer) {
 		int symbols;
 		cout << "Enter the line number, the index and the symbols: ";
 		cin >> line >> index >> symbols;
+		cin.ignore();
 		text.cut_text(line, index, symbols);
 		buffer.update_buffer(text);
 	}
@@ -709,6 +703,7 @@ void print_help() {
 	cout << "The list of commands:\n\n";
 	cout << "help    - print this help message\n";
 	cout << "exit    - exit the program\n\n";
+
 	cout << "add     - a new string to the text editor\n";
 	cout << "print   - print the text\n";
 	cout << "new     - create a new line\n";
@@ -720,7 +715,7 @@ void print_help() {
 	cout << "copy    - copy the text to the clipboard\n";
 	cout << "paste   - paste the text from the clipboard\n";
 	cout << "cut     - cut the text to the clipboard\n";
-	cout << "replace - insert and replace the text\n";
+	cout << "replace - insert and replace the text\n\n";
 
 	cout << "clear   - clear the console\n";
 	cout << "undo    - undo the last action\n";
@@ -731,6 +726,10 @@ void print_help() {
 void exit() {
 	cout << "Exiting the program...\n";
 	// clear all the memory
-
+	
 	exit(0);
 }
+
+
+// make destructor for classes
+// make sure to delete all the memory
