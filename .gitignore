@@ -68,3 +68,7 @@ Debug/
 Release/
 x64/
 x86/
+
+[oO]bj
+[bB]in
+.idea
