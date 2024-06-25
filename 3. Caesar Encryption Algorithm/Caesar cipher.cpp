@@ -1,9 +1,9 @@
 #include<stdio.h>
 #include <iostream>
 
-char* encrypt(const char* raw_text, int key) {
+char* encrypt(char* raw_text, int key) {
 	int text_length = strlen(raw_text);
-	char* encrypted_text = new char[text_length+1];
+	char* encrypted_text = new char[text_length + 1];
 
 	key = key % 26;
 	for (int i = 0; i < text_length; i++) {
@@ -25,7 +25,7 @@ char* encrypt(const char* raw_text, int key) {
 		}
 		encrypted_text[text_length] = '\0';
 	}
-	
+
 	return encrypted_text;
 
 }
@@ -62,7 +62,8 @@ char* decrypt(char* encrypted_text, int key) {
 
 int main()
 {	
-	const char* raw_text = "Roses are red, violets are blue.";
+	char string[] = "Roses are red, violets are blue.";
+	char* raw_text = string;
 	int key = 69;
 	char* encrypted_text = encrypt(raw_text, key);
 	printf("Encrypted text: %s\n", encrypted_text);
