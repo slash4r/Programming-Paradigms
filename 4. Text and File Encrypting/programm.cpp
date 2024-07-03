@@ -606,7 +606,7 @@ public:
 		return result;
 	};
 
-	char* caesar_init(Text& console_text) {
+	void caesar_init(Text& console_text) {
 
 		char* file_path = new char[128];
 		file_path[0] = '\0';
@@ -626,12 +626,19 @@ public:
 		}
 		else {
 			cout << "Invalid choice!\n";
-			return nullptr;
+			delete[] file_path;
+			return;
 		}
 
 		cout << "Enter the shift key: ";
 		cin >> shift_key;
 		cin.ignore();
+		if (shift_key < 0)
+		{
+			cout << "Invalid shift key!\n";
+			delete[] file_path;
+			return;
+		}
 
 		char choice2;
 		cout << "Would you like to operate with text from the console or from a file? ('c'/'f'): ";
@@ -661,8 +668,6 @@ public:
 			}
 			console_text.clear_all();
 			console_text.load_from_file(console_filename);
-
-			return file_path;
 		}
 
 		else if (choice2 == 'f')
@@ -681,12 +686,12 @@ public:
 		}
 		else {
 			cout << "Invalid choice!\n";
-			return nullptr;
+			delete[] file_path;
+			return;
 		}
-		return nullptr;
 
 		delete[] file_path;
-		delete[] suffix;
+		//delete[] suffix;
 	};
 
 	void caesar_encrypt(char* source_path, const char* suffix, int key) {
@@ -745,15 +750,14 @@ public:
 		file.close();
 		new_file.close();
 	};
-
 	
 	void caesar_decrypt(char* source_path, const char* suffix, int key) {
 
 		ifstream file;
-		file.open(source_path);  // file_path == "C:\_GitHubProgramming-Paradigms\4. Text and File Encrypting\console encrypted.txt"
+		file.open(source_path);
 		if (!file.is_open())
 		{
-			cout << "Failed to open the file: " << source_path << endl; // here is an error
+			cout << "Failed to open the file: " << source_path << endl;
 			return;
 		}
 
@@ -781,7 +785,7 @@ public:
 			string[chars_read] = '\0';
 			char* decrypted = decrypt(string, key);
 			cout << "Decrypted text: " << decrypted << endl;
-			// write the decrypted text to the same file
+			// write the decrypted text to the new file
 			new_file.write(decrypted, strlen(decrypted));
 
 			delete[] decrypted;
@@ -794,7 +798,7 @@ public:
 			string[chars_read] = '\0';
 			char* decrypted = decrypt(string, key);
 			cout << "Decrypted text: " << decrypted << endl;
-			// write the decrypted text to the same file
+			// write the decrypted text to the new file
 			new_file.write(decrypted, strlen(decrypted));
 
 			delete[] decrypted;
@@ -804,7 +808,6 @@ public:
 		file.close();
 		new_file.close();
 	};
-
 
 private:
 	Text text;
@@ -952,7 +955,6 @@ void parse_command(char* command, Text& text, BufferText& buffer, CaesarCipher& 
 	}
 	else if (!strcmp(command, "caesar"))
 	{
-		Text text_caesar = Text(text); // copy the text
 		cipher.caesar_init(text);
 	}
 	else
@@ -977,7 +979,6 @@ char* get_input() {
 
 		delete[] input;
 		input = new_input;
-		// infinite loop here
 
 		if (string[strlen(string) - 1] == '\n')
 		{
@@ -1019,9 +1020,6 @@ void print_help() {
 
 void exit() {
 	cout << "Exiting the program...\n";
-	// clear all the memory
 
 	exit(0);
 }
-
-// insert_replace error
