@@ -607,10 +607,7 @@ public:
 	char* caesar_init(Text& console_text) {
 
 		char* file_path = new char[128];
-		char* filename = new char[128];
-		
 		file_path[0] = '\0';
-		filename[0] = '\0';
 
 		char choice1;
 		const char* suffix;
@@ -641,18 +638,28 @@ public:
 
 		if (choice2 == 'c')
 		{
-			char* temp = new char[128];
-			temp[0] = '\0';
+			char* console_file_path = new char[128];
+			console_file_path[0] = '\0';
+			strcat_s(console_file_path, 128, "C:\\_GitHub\\Programming-Paradigms\\4. Text and File Encrypting\\console.txt");
 
-			strcat_s(temp, 128, "console ");
-			strcat_s(temp, 128, suffix);
-			strcpy_s(filename, 128, temp);
-			console_text.save_to_file(filename);
+			char* console_filename = new char[20];
+			strcpy_s(console_filename, 20, "console");
+			console_text.save_to_file(console_filename);
+			
+			if (choice1 == 'e') {
+				caesar_encrypt(console_file_path, suffix, shift_key);
+				cout << "Encrypted console updated!\n";
+				strcpy_s(console_filename, 20, "console_encrypted");
+			}
+			else if (choice1 == 'd') {
+				caesar_decrypt(console_file_path, suffix, shift_key);
+				cout << "Decrypted console updated!\n";
+				cout << console_file_path << endl;
+				strcpy_s(console_filename, 20, "console_decrypted");
+			}
+			
+			console_text.load_from_file(console_filename);
 
-			// current directory + filename
-			strcat_s(file_path, 128, "C:\\_GitHub\\Programming-Paradigms\\4. Text and File Encrypting\\");
-			strcat_s(file_path, 128, filename);
-			//delete filename;
 			return file_path;
 		}
 
@@ -674,11 +681,9 @@ public:
 			cout << "Invalid choice!\n";
 			return nullptr;
 		}
-
 		return nullptr;
 
 		delete[] file_path;
-		delete[] filename;
 		delete[] suffix;
 	};
 
@@ -942,7 +947,7 @@ void parse_command(char* command, Text& text, BufferText& buffer, CaesarCipher& 
 	else if (!strcmp(command, "caesar"))
 	{
 		Text text_caesar = Text(text); // copy the text
-		cipher.caesar_init(text_caesar);
+		cipher.caesar_init(text);
 	}
 	else
 	{
