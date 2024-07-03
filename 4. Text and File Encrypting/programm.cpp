@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <Windows.h>
 
 using namespace std;
 
@@ -417,6 +418,12 @@ public:
 		current_line.insert_replace(index, string, string_length); // current line is not updated
 	};
 
+	//Text caesar_get_text() {
+	//	// implement later
+	//	return *this;
+	//};
+		
+
 private:
 	int lines_count = 1;
 	int lines_capacity = 16;
@@ -536,15 +543,276 @@ private:
 	Text next_redo;
 };
 
-void print_help();
-void parse_command(char*, Text&, BufferText&);
 char* get_input();
+
+class CaesarCipher {
+public:
+	CaesarCipher() {
+		text = Text();
+	};
+
+	char* encrypt(char* text, int shift) {
+		// Pointer to encrypt function
+		typedef char* (*encr_ptr_t)(char*, int);
+
+		HINSTANCE handle = LoadLibrary(TEXT("jopa.dll")); // Load the DLL
+
+		if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
+		{
+			cout << "Lib not found" << endl;
+			return nullptr;
+		}
+
+		encr_ptr_t encr_ptr = (encr_ptr_t)GetProcAddress(handle, "encrypt"); // Get the address of the function
+		if (encr_ptr == nullptr)
+		{
+			cout << "Function not found" << endl;
+			return nullptr;
+		}
+
+		// function logic (change it later)
+		char* result = encr_ptr(text, shift);
+
+		FreeLibrary(handle);
+
+		return result;
+	};
+	
+	char* decrypt(char* text, int shift) {
+
+		// Pointer to decrypt function
+		typedef char* (*decr_ptr_t)(char*, int);
+		HINSTANCE handle = LoadLibrary(TEXT("jopa.dll")); // Load the DLL
+
+		if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
+		{
+			cout << "Lib not found" << endl;
+			return nullptr;
+		}
+
+		decr_ptr_t decr_ptr = (decr_ptr_t)GetProcAddress(handle, "decrypt"); // Get the address of the function
+		if (decr_ptr == nullptr)
+		{
+			cout << "Function not found" << endl;
+			return nullptr;
+		}
+
+		char* result = decr_ptr(text, shift);
+
+		FreeLibrary(handle);
+
+		return result;
+	};
+
+	char* caesar_init(Text& console_text) {
+
+		char* file_path = new char[128];
+		char* filename = new char[128];
+		
+		file_path[0] = '\0';
+		filename[0] = '\0';
+
+		char choice1;
+		const char* suffix;
+		int shift_key;
+
+		cout << "Do you want to encrypt or decrypt the text? ('e'/'d'): ";
+		cin >> choice1;
+		cin.ignore();
+		if (choice1 == 'e') {
+			suffix = "_encrypted.txt";
+		}
+		else if (choice1 == 'd') {
+			suffix = "_decrypted.txt";
+		}
+		else {
+			cout << "Invalid choice!\n";
+			return nullptr;
+		}
+
+		cout << "Enter the shift key: ";
+		cin >> shift_key;
+		cin.ignore();
+
+		char choice2;
+		cout << "Would you like to operate with text from the console or from a file? ('c'/'f'): ";
+		cin >> choice2;
+		cin.ignore();
+
+		if (choice2 == 'c')
+		{
+			char* temp = new char[128];
+			temp[0] = '\0';
+
+			strcat_s(temp, 128, "console ");
+			strcat_s(temp, 128, suffix);
+			strcpy_s(filename, 128, temp);
+			console_text.save_to_file(filename);
+
+			// current directory + filename
+			strcat_s(file_path, 128, "C:\\_GitHub\\Programming-Paradigms\\4. Text and File Encrypting\\");
+			strcat_s(file_path, 128, filename);
+			//delete filename;
+			return file_path;
+		}
+
+		else if (choice2 == 'f')
+		{
+			cout << "Enter the filename path: ";
+			file_path = get_input();
+			if (choice1 == 'e') {
+				caesar_encrypt(file_path, suffix, shift_key);
+				cout << "Encrypted text saved!\n";
+			}
+			else if (choice1 == 'd') {
+				caesar_decrypt(file_path, suffix, shift_key);
+				cout << "Decrypted text saved!\n";
+			}
+
+		}
+		else {
+			cout << "Invalid choice!\n";
+			return nullptr;
+		}
+
+		return nullptr;
+
+		delete[] file_path;
+		delete[] filename;
+		delete[] suffix;
+	};
+
+	void caesar_encrypt(char* source_path, const char* suffix, int key) {
+
+		ifstream file;
+		file.open(source_path);  // file_path == "C:\_GitHubProgramming-Paradigms\4. Text and File Encrypting\console encrypted.txt"
+		if (!file.is_open())
+		{
+			cout << "Failed to open the file: " << source_path << endl; // here is an error
+			return;
+		}
+
+		size_t len = strlen(source_path);
+		source_path[len - 4] = '\0';
+
+		// Create a temporary file path
+		string edited_file_path = string(source_path) + suffix;
+
+		ofstream new_file(edited_file_path);
+		if (!new_file.is_open()) {
+			cout << "Failed to create a temporary file." << endl;
+			file.close();
+			return;
+		}
+
+		int chunk_size = 128;
+		char* string = new char[chunk_size + 1];
+		
+
+		// encrypt the text chunk by chunk and write it to the file
+		while (file.read(string, chunk_size)) // breaks here 'Lib not found'
+		{
+			int chars_read = file.gcount();
+			string[chars_read] = '\0';
+			char* encrypted = encrypt(string, key);
+			cout << "Encrypted text: " << encrypted << endl;
+			// write the encrypted text to the same file
+			new_file.write(encrypted, strlen(encrypted));
+
+			delete[] encrypted;
+		}
+
+		// encrypt the last chunk
+		int chars_read = file.gcount();
+		if (chars_read > 0)
+		{
+			string[chars_read] = '\0';
+			char* encrypted = encrypt(string, key);
+			cout << "Encrypted text: " << encrypted << endl;
+			// write the encrypted text to the same file
+			new_file.write(encrypted, strlen(encrypted));
+			delete[] encrypted;			
+		}
+		
+		delete[] string;
+		file.close();
+		new_file.close();
+	};
+
+	
+	void caesar_decrypt(char* source_path, const char* suffix, int key) {
+
+		ifstream file;
+		file.open(source_path);  // file_path == "C:\_GitHubProgramming-Paradigms\4. Text and File Encrypting\console encrypted.txt"
+		if (!file.is_open())
+		{
+			cout << "Failed to open the file: " << source_path << endl; // here is an error
+			return;
+		}
+
+		size_t len = strlen(source_path);
+		source_path[len - 4] = '\0';
+
+		// Create a temporary file path
+		string edited_file_path = string(source_path) + suffix;
+
+		ofstream new_file(edited_file_path);
+		if (!new_file.is_open()) {
+			cout << "Failed to create a temporary file." << endl;
+			file.close();
+			return;
+		}
+
+		int chunk_size = 10;
+		char* string = new char[chunk_size + 1];
+
+
+		// decrypt the text chunk by chunk and write it to the file
+		while (file.read(string, chunk_size)) // breaks here 'Lib not found'
+		{
+			int chars_read = file.gcount();
+			string[chars_read] = '\0';
+			char* decrypted = decrypt(string, key);
+			cout << "Decrypted text: " << decrypted << endl;
+			// write the decrypted text to the same file
+			new_file.write(decrypted, strlen(decrypted));
+
+			delete[] decrypted;
+		}
+
+		// encrypt the last chunk
+		int chars_read = file.gcount();
+		if (chars_read > 0)
+		{
+			string[chars_read] = '\0';
+			char* decrypted = decrypt(string, key);
+			cout << "Decrypted text: " << decrypted << endl;
+			// write the decrypted text to the same file
+			new_file.write(decrypted, strlen(decrypted));
+
+			delete[] decrypted;
+		}
+
+		delete[] string;
+		file.close();
+		new_file.close();
+	};
+
+
+private:
+	Text text;
+};
+
+void print_help();
+void parse_command(char*, Text&, BufferText&, CaesarCipher&);
 void exit();
+
 
 int main() {
 	char command[COMMAND_LENGTH];
 	Text text;
 	BufferText buffer;
+	CaesarCipher cipher;
 
 	cout << "Welcome to the console - based text editor!\n";
 	cout << "Type 'help' to see the list of commands.\n\n";
@@ -553,12 +821,12 @@ int main() {
 	{
 		cout << ">> ";
 		char* command = get_input();
-		parse_command(command, text, buffer);
+		parse_command(command, text, buffer, cipher);
 	}
 	return 0;
 }
 
-void parse_command(char* command, Text& text, BufferText& buffer) {
+void parse_command(char* command, Text& text, BufferText& buffer, CaesarCipher& cipher) {
 	if (!strcmp(command, "help"))
 	{
 		print_help();
@@ -671,10 +939,16 @@ void parse_command(char* command, Text& text, BufferText& buffer) {
 	{
 		buffer.redo(text);
 	}
+	else if (!strcmp(command, "caesar"))
+	{
+		Text text_caesar = Text(text); // copy the text
+		cipher.caesar_init(text_caesar);
+	}
 	else
 	{
 		cout << "Unknown command. Type 'help' to see the list of commands.\n";
 	}
+
 }
 
 char* get_input() {
@@ -725,7 +999,9 @@ void print_help() {
 
 	cout << "clear   - clear the console\n";
 	cout << "undo    - undo the last action\n";
-	cout << "redo    - redo the last action\n";
+	cout << "redo    - redo the last action\n\n";
+
+	cout << "caesar  - encrypt/decrypt the text using the Caesar cipher\n";
 	cout << endl;
 }
 
