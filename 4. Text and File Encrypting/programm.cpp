@@ -418,10 +418,12 @@ public:
 		current_line.insert_replace(index, string, string_length); // current line is not updated
 	};
 
-	//Text caesar_get_text() {
-	//	// implement later
-	//	return *this;
-	//};
+	void clear_all() {
+		delete[] this->lines;
+		this->lines = new Line[lines_capacity];
+		this->current_line = lines[0];
+		this->lines_count = 1;
+	};
 		
 
 private:
@@ -657,7 +659,7 @@ public:
 				cout << console_file_path << endl;
 				strcpy_s(console_filename, 20, "console_decrypted");
 			}
-			
+			console_text.clear_all();
 			console_text.load_from_file(console_filename);
 
 			return file_path;
@@ -936,6 +938,10 @@ void parse_command(char* command, Text& text, BufferText& buffer, CaesarCipher& 
 	{
 		system("cls");
 	}
+	else if (!strcmp(command, "refresh")) {
+		text.clear_all();
+		buffer.update_buffer(text);
+	}
 	else if (!strcmp(command, "undo"))
 	{
 		buffer.undo(text);
@@ -1000,7 +1006,8 @@ void print_help() {
 	cout << "copy    - copy the text to the clipboard\n";
 	cout << "paste   - paste the text from the clipboard\n";
 	cout << "cut     - cut the text to the clipboard\n";
-	cout << "replace - insert and replace the text\n\n";
+	cout << "replace - insert and replace the text\n";
+	cout << "refresh - clear the text\n\n";
 
 	cout << "clear   - clear the console\n";
 	cout << "undo    - undo the last action\n";
