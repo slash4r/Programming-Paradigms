@@ -2,6 +2,9 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <map>
+#include <functional>
+
 using namespace std;
 
 
@@ -92,6 +95,7 @@ int get_precedence(const string& token)
 	return -1; // invalid token
 }
 
+
 vector<string> ShuntingYard(vector<string> tokens) {
     vector<string> output;
     stack<string> operators;
@@ -138,6 +142,46 @@ vector<string> ShuntingYard(vector<string> tokens) {
 
     return output;
 }
+
+
+double evaluate(vector<string> postfix) {
+	stack<double> numbers;
+
+	for (const string& token : postfix) {
+		if (isdigit(token[0])) 
+		{
+			numbers.push(stod(token));
+		} 
+		else 
+		{
+			double num2 = numbers.top();
+			numbers.pop();
+			double num1 = numbers.top();
+			numbers.pop();
+
+			if (token == "+") 
+			{
+				numbers.push(num1 + num2);
+			} 
+			else if (token == "-") 
+			{
+				numbers.push(num1 - num2);
+			} 
+			else if (token == "*") 
+			{
+				numbers.push(num1 * num2);
+			} 
+			else if (token == "/") 
+			{
+				numbers.push(num1 / num2);
+			}
+		}
+	}
+
+	return numbers.top();
+}
+
+
 int main()
 {
 	string input;
@@ -158,6 +202,8 @@ int main()
 	{
 		cout << output[i] << endl;
 	}
+
+	cout << "Result: " << evaluate(output) << endl;
 
 	return 0;
 }
