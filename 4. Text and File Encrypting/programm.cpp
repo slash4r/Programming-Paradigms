@@ -551,57 +551,49 @@ class CaesarCipher {
 public:
 	CaesarCipher() {
 		text = Text();
-	};
+		
 
-	char* encrypt(char* text, int shift) {
-		// Pointer to encrypt function
-		typedef char* (*encr_ptr_t)(char*, int);
-
-		HINSTANCE handle = LoadLibrary(TEXT("jopa.dll")); // Load the DLL
+		handle = LoadLibrary(TEXT("C:\\_GitHub\\Programming-Paradigms\\jopa\\source_dll.dll")); // Load the DLL
 
 		if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
 		{
 			cout << "Lib not found" << endl;
-			return nullptr;
+			return;
 		}
 
-		encr_ptr_t encr_ptr = (encr_ptr_t)GetProcAddress(handle, "encrypt"); // Get the address of the function
+		encr_ptr = (encr_ptr_t)GetProcAddress(handle, "encrypt"); // Get the address of the function
 		if (encr_ptr == nullptr)
 		{
 			cout << "Function not found" << endl;
-			return nullptr;
+			return;
 		}
 
+		decr_ptr = (decr_ptr_t)GetProcAddress(handle, "decrypt"); // Get the address of the function
+		if (decr_ptr == nullptr)
+		{
+			cout << "Function not found" << endl;
+			return;
+		}
+		
+
+	};
+
+	~CaesarCipher() {
+		FreeLibrary(handle);
+		cout << "Library unloaded" << endl;
+	};
+
+	char* encrypt(char* text, int shift) {
+		
 		// function logic (change it later)
 		char* result = encr_ptr(text, shift);
-
-		FreeLibrary(handle);
 
 		return result;
 	};
 	
 	char* decrypt(char* text, int shift) {
 
-		// Pointer to decrypt function
-		typedef char* (*decr_ptr_t)(char*, int);
-		HINSTANCE handle = LoadLibrary(TEXT("jopa.dll")); // Load the DLL
-
-		if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
-		{
-			cout << "Lib not found" << endl;
-			return nullptr;
-		}
-
-		decr_ptr_t decr_ptr = (decr_ptr_t)GetProcAddress(handle, "decrypt"); // Get the address of the function
-		if (decr_ptr == nullptr)
-		{
-			cout << "Function not found" << endl;
-			return nullptr;
-		}
-
 		char* result = decr_ptr(text, shift);
-
-		FreeLibrary(handle);
 
 		return result;
 	};
@@ -811,7 +803,17 @@ public:
 
 private:
 	Text text;
+
+	HINSTANCE handle;
+	// Pointer to decrypt function
+	typedef char* (*encr_ptr_t)(char*, int);
+	typedef char* (*decr_ptr_t)(char*, int);
+
+	encr_ptr_t encr_ptr;
+	decr_ptr_t decr_ptr; 
 };
+
+
 
 void print_help();
 void parse_command(char*, Text&, BufferText&, CaesarCipher&);
