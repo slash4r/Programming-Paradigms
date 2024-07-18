@@ -7,7 +7,6 @@
 
 using namespace std;
 
-string input;
 vector<string> variables;
 vector<double> variables_values;
 
@@ -122,6 +121,12 @@ vector<string> get_tokens(string& s)
 						continue;
 					}
 
+					if (token == '-' && i + 1 < end && isdigit(s[i + 1]))
+					{
+						current_token += token;
+						continue;
+					}
+
 					if (is_token_operator(token))
 					{
 						current_token += token;
@@ -190,7 +195,7 @@ vector<string> ShuntingYard(vector<string>& tokens) {
     stack<string> operators;
 
     for (const string& token : tokens) {
-        if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1))  // If token is a number
+		if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1) || (token[0] == '-' && token.size() > 1))  // If token is a number
 		{ 
 			output.push_back(token);
         } 
@@ -259,7 +264,7 @@ double evaluate(const vector<string>& postfix) {
 	stack<double> numbers;
 
 	for (const string& token : postfix) {
-		if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1))
+		if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1) || token.size() > 1 && isdigit(token[1]))
 		{
 			numbers.push(stod(token));
 		} 
@@ -289,7 +294,7 @@ double evaluate(const vector<string>& postfix) {
 			{
 				double num2 = numbers.top();
 				numbers.pop();
-				numbers.push(pow(num1, num2));
+				numbers.push(pow(num2, num1)); // error here
 			}
 		}
 
@@ -371,7 +376,7 @@ void get_variables(string& token, vector<string>& var_array, vector<double>& var
 
 int main()
 {
-	cout << "Enter an equation: ";
+	string input;
 	getline(cin, input);
 
 	while (true) 
@@ -382,31 +387,13 @@ int main()
 		}
 
 		get_variables(input, variables, variables_values);
-		for (int i = 0; i < variables.size(); i++)
-		{
-			cout << "Variable: " << variables[i] << "\nValue: " << variables_values[i] << endl;
-		}
-
-		cout << "Enter an equation: ";
+		
 		getline(cin, input);
 	}
 
-	cout << "Calculating equation: " << input << endl;
-
 	vector<string> tokens = get_tokens(input);
 
-	for (int i = 0; i < tokens.size(); i++)
-	{
-		cout << tokens[i] << endl;
-	}
-
-	cout << "Shunting Yard: \n" << endl;
-
 	vector<string> output = ShuntingYard(tokens);
-	for (int i = 0; i < output.size(); i++)
-	{
-		cout << output[i] << endl;
-	}
 
 	cout << "Result: " << evaluate(output) << endl;
 
