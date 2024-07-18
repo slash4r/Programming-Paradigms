@@ -16,6 +16,14 @@ vector<char> valid_operators = {
 };
 
 
+vector<string> valid_functions = {
+	"max",
+	"min", 
+	"abs",
+	"pow",
+};
+
+
 bool is_token_operator(char token)
 // check if token is in valid_tokens
 {
@@ -32,49 +40,92 @@ bool is_token_operator(char token)
 }
 
 
+bool is_token_function(string token)
+{
+	for(const string& function : valid_functions)
+	{
+		if (token == function)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 vector<string> get_tokens(string& s)
 {
 	vector<string> tokens;
 	int end = s.size();
-	string current_number = "";
+	string current_token = "";
+	string current_function = "";
 
 	for (int i = 0; i < end; i++)
 	{
 		char token = s[i];
 
-		if (s[i] != ' ')
+		if (token != ' ')
 		{
-			// check if its a number
-			if (isdigit(token))
+			if (isalpha(token))
 			{
-				current_number += token;
+				current_function += token;
 				continue;
 			}
 
-			else {
-				if (current_number != "")
+			else
+			{
+				if (current_function != "")
 				{
-					tokens.push_back(current_number);
-					current_number = "";
+					tokens.push_back(current_function);
+					current_function = "";
 				}
 
-				if (is_token_operator(token))
+				// check if its a number
+				if (isdigit(token) || token == '.')
 				{
-					current_number += token;
-					tokens.push_back(current_number);
-					current_number = "";
+					current_token += token;
 					continue;
 				}
 
-				cout << "Invalid token: " << token << endl;
-				return {};
-			}
+				else
+				{
+					if (current_token != "")
+					{
+						tokens.push_back(current_token);
+						current_token = "";
+					}
+
+					if (token == ',')
+					{
+						current_token += token;
+						tokens.push_back(current_token);
+						current_token = "";
+						continue;
+					}
+
+					if (is_token_operator(token))
+					{
+						current_token += token;
+						tokens.push_back(current_token);
+						current_token = "";
+						continue;
+					}
+
+					cout << "Invalid token: " << token << endl;
+					return {};
+				}
+			}			
 		}
 	}
 
-	if (current_number != "")
+	if (current_token != "")
 	{
-		tokens.push_back(current_number);
+		tokens.push_back(current_token);
+	}
+
+	if (current_function != "")
+	{
+		tokens.push_back(current_function);
 	}
 
 	return tokens;
@@ -91,6 +142,10 @@ int get_precedence(const string& token)
 	{
 		return 2;
 	}
+	else if (is_token_function(token))
+	{
+		return 3;
+	}
 
 	return -1; // invalid token
 }
@@ -101,10 +156,15 @@ vector<string> ShuntingYard(vector<string> tokens) {
     stack<string> operators;
 
     for (const string& token : tokens) {
-        if (isdigit(token[0]))  // If token is a numbeê
+        if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1))  // If token is a number
 		{ 
 			output.push_back(token);
         } 
+
+		else if (is_token_function(token))
+		{
+			operators.push(token);
+		}
 		
 		else if (token == "(" ) 
 		{
@@ -119,7 +179,24 @@ vector<string> ShuntingYard(vector<string> tokens) {
                 operators.pop();
             }
             operators.pop(); // Pop the "("
-        } 
+
+			// handle functions
+			if (!operators.empty() && is_token_function(operators.top()))
+			{
+				output.push_back(operators.top());
+				operators.pop();
+			}
+        }
+
+		// handle commas
+		else if (token == ",")
+		{
+			while (!operators.empty() && operators.top() != "(")
+			{
+				output.push_back(operators.top());
+				operators.pop();
+			}
+		}
 		
 		else 
 		{
@@ -148,10 +225,40 @@ double evaluate(vector<string> postfix) {
 	stack<double> numbers;
 
 	for (const string& token : postfix) {
-		if (isdigit(token[0])) 
+		if (isdigit(token[0]) || (token[0] == '.' && token.size() > 1))
 		{
 			numbers.push(stod(token));
 		} 
+
+		else if (is_token_function(token))
+		{
+			double num1 = numbers.top();
+			numbers.pop();
+
+			if (token == "max") 
+			{
+				double num2 = numbers.top();
+				numbers.pop();
+				numbers.push(max(num1, num2));
+			} 
+			else if (token == "min") 
+			{
+				double num2 = numbers.top();
+				numbers.pop();
+				numbers.push(min(num1, num2));
+			} 
+			else if (token == "abs") 
+			{
+				numbers.push(abs(num1));
+			} 
+			else if (token == "pow") 
+			{
+				double num2 = numbers.top();
+				numbers.pop();
+				numbers.push(pow(num1, num2));
+			}
+		}
+
 		else 
 		{
 			double num2 = numbers.top();
@@ -185,7 +292,7 @@ double evaluate(vector<string> postfix) {
 int main()
 {
 	string input;
-	cout << "Enter a string: ";
+	cout << "Enter an equation: ";
 	getline(cin, input);
 	
 	vector<string> tokens = get_tokens(input);
