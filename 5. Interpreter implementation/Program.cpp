@@ -7,6 +7,10 @@
 
 using namespace std;
 
+string input;
+vector<string> variables;
+vector<double> variables_values;
+
 
 vector<char> valid_operators = {
 	'+', 
@@ -58,7 +62,7 @@ vector<string> get_tokens(string& s)
 	vector<string> tokens;
 	int end = s.size();
 	string current_token = "";
-	string current_function = "";
+	string current_alpha_token = "";
 
 	for (int i = 0; i < end; i++)
 	{
@@ -68,16 +72,31 @@ vector<string> get_tokens(string& s)
 		{
 			if (isalpha(token))
 			{
-				current_function += token;
+				current_alpha_token += token;
 				continue;
 			}
 
 			else
 			{
-				if (current_function != "")
+				if (is_token_function(current_alpha_token))
 				{
-					tokens.push_back(current_function);
-					current_function = "";
+					tokens.push_back(current_alpha_token);
+					current_alpha_token = "";
+				}
+
+				else if (current_alpha_token != "")
+				{
+					// find index of a variabe in the variables array
+					for (int i = 0; i < variables.size(); i++)
+					{
+						if (current_alpha_token == variables[i])
+						{
+							double value = variables_values[i];
+							tokens.push_back(to_string(value));
+							break;
+						}
+					}
+					current_alpha_token = "";
 				}
 
 				// check if its a number
@@ -123,9 +142,24 @@ vector<string> get_tokens(string& s)
 		tokens.push_back(current_token);
 	}
 
-	if (current_function != "")
+	if (is_token_function(current_alpha_token))
 	{
-		tokens.push_back(current_function);
+		tokens.push_back(current_alpha_token);
+		current_alpha_token = "";
+	}
+
+	else if (current_alpha_token != "")
+	{
+		// find index of a variabe in the variables array
+		for (int i = 0; i < variables.size(); i++)
+		{
+			if (current_alpha_token == variables[i])
+			{
+				double value = variables_values[i];
+				tokens.push_back(to_string(value));
+				break;
+			}
+		}
 	}
 
 	return tokens;
@@ -151,7 +185,7 @@ int get_precedence(const string& token)
 }
 
 
-vector<string> ShuntingYard(vector<string> tokens) {
+vector<string> ShuntingYard(vector<string>& tokens) {
     vector<string> output;
     stack<string> operators;
 
@@ -221,7 +255,7 @@ vector<string> ShuntingYard(vector<string> tokens) {
 }
 
 
-double evaluate(vector<string> postfix) {
+double evaluate(const vector<string>& postfix) {
 	stack<double> numbers;
 
 	for (const string& token : postfix) {
@@ -289,12 +323,76 @@ double evaluate(vector<string> postfix) {
 }
 
 
+bool check_variable(string& token)
+{
+	// take substring from 0 to 3 to check if its a variable
+	string variable = token.substr(0, 3);
+	if (variable == "var")
+	{
+		return true;
+	}
+	return false;
+}
+
+void get_variables(string& token, vector<string>& var_array, vector<double>& var_val_array)
+{
+	string variable = "";
+	int var_end;
+	// get the variables and their values
+	for (int i = 3; i < token.size(); i++)
+	{
+		if (token[i] == ' ')
+		{
+			continue;
+		}
+
+		if (token[i] == '=')
+		{
+			var_end = i;
+			var_array.push_back(variable);
+			break;
+		}
+
+		if (token[i] != ' ')
+		{
+			variable += token[i];
+			continue;
+		}
+	}
+
+	double value;
+	string equation = token.substr(var_end + 1, token.size());
+
+	vector<string> tokens = get_tokens(equation);
+	vector<string> shunting_yard = ShuntingYard(tokens);
+	value = evaluate(shunting_yard);
+	var_val_array.push_back(value);
+}
+
 int main()
 {
-	string input;
 	cout << "Enter an equation: ";
 	getline(cin, input);
-	
+
+	while (true) 
+	{
+		if (!check_variable(input))
+		{
+			break;
+		}
+
+		get_variables(input, variables, variables_values);
+		for (int i = 0; i < variables.size(); i++)
+		{
+			cout << "Variable: " << variables[i] << "\nValue: " << variables_values[i] << endl;
+		}
+
+		cout << "Enter an equation: ";
+		getline(cin, input);
+	}
+
+	cout << "Calculating equation: " << input << endl;
+
 	vector<string> tokens = get_tokens(input);
 
 	for (int i = 0; i < tokens.size(); i++)
